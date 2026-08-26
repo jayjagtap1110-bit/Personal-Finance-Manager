@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>View Income</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+}
+
+.container {
+    width: 90%;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gray;
+}
+
+h2 {
+    text-align: center;
+    color: green;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid gray;
+}
+
+th {
+    background: green;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+}
+
+.action-btn {
+    margin: 3px;
+    padding: 7px 12px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background: orange;
+}
+
+.delete-btn {
+    background: red;
+}
+
+.back-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: blue;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#editForm {
+    display: none;
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+#editForm input,
+#editForm select,
+#editForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 15px 0;
+    box-sizing: border-box;
+}
+
+.save-btn {
+    background: green;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.cancel-btn {
+    background: #555;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Income History</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>No.</th>
+<th>Income From</th>
+<th>Amount</th>
+<th>Currency</th>
+<th>Date</th>
+<th>Description</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody id="incomeTable">
+</tbody>
+
+</table>
+
+
+<!-- Edit Form -->
+
+<div id="editForm">
+
+<h2>Edit Income</h2>
+
+<input type="hidden" id="editId">
+
+
+<label>Income From</label>
+
+<select id="editIncomeFrom">
+
+<option value="Salary">Salary</option>
+<option value="Freelance">Freelance</option>
+<option value="Business">Business</option>
+<option value="Agriculture">Agriculture</option>
+<option value="Self-Income">Self-Income</option>
+<option value="Rental Income">Rental Income</option>
+<option value="Pension">Pension</option>
+<option value="Gift">Gift</option>
+<option value="Other">Other</option>
+
+</select>
+
+
+<label>Amount</label>
+
+<input
+    type="number"
+    id="editAmount"
+    min="0"
+    step="0.01"
+>
+
+
+<label>Currency</label>
+
+<select id="editCurrency">
+
+<option value="INR">Indian Rupee (₹)</option>
+<option value="USD">US Dollar ($)</option>
+<option value="EUR">Euro (€)</option>
+<option value="GBP">British Pound (£)</option>
+
+</select>
+
+
+<label>Date</label>
+
+<input type="date" id="editDate">
+
+
+<label>Description</label>
+
+<textarea
+    id="editDescription"
+    rows="4">
+</textarea>
+
+
+<button class="save-btn" onclick="updateIncome()">
+Save Changes
+</button>
+
+<button class="cancel-btn" onclick="cancelEdit()">
+Cancel
+</button>
+
+</div>
+
+
+<button class="back-btn"
+        onclick="window.location.href='dashboard.html'">
+
+Back To Dashboard
+
+</button>
+
+</div>
+
+
+<script>
+
+const userId = localStorage.getItem("userId");
+
+
+if (!userId) {
+
+    alert("Please login first");
+
+    window.location.href = "login.html";
+
+} else {
+
+    loadIncome();
+
+}
+
+
+/* Load Income */
+
+function loadIncome() {
+
+    fetch("http://localhost:8080/income/user/" + userId)
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error("Failed to load income");
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        let table = "";
+
+        data.forEach((income, index) => {
+
+            table += `
+
+                <tr>
+
+                    <td>${index + 1}</td>
+
+                    <td>${income.incomeFrom}</td>
+
+                    <td>${income.amount}</td>
+
+                    <td>${income.currency}</td>
+
+                    <td>${income.date}</td>
+
+                    <td>${income.description || ""}</td>
+
+                    <td>
+
+                        <button
+                            class="action-btn edit-btn"
+                            onclick='editIncome(${JSON.stringify(income)})'>
+
+                            Edit
+
+                        </button>
+
+                        <button
+                            class="action-btn delete-btn"
+                            onclick="deleteIncome(${income.id})">
+
+                            Delete
+
+                        </button>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        });
+
+
+        document.getElementById("incomeTable").innerHTML = table;
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        document.getElementById("incomeTable").innerHTML = `
+
+            <tr>
+
+                <td colspan="7">
+
+                    Failed to load income
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+
+/* Edit Income */
+
+function editIncome(income) {
+
+    document.getElementById("editForm").style.display = "block";
+
+    document.getElementById("editId").value = income.id;
+
+    document.getElementById("editIncomeFrom").value =
+        income.incomeFrom;
+
+    document.getElementById("editAmount").value =
+        income.amount;
+
+    document.getElementById("editCurrency").value =
+        income.currency;
+
+    document.getElementById("editDate").value =
+        income.date;
+
+    document.getElementById("editDescription").value =
+        income.description || "";
+
+    window.scrollTo({
+        top: document.getElementById("editForm").offsetTop,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* Update Income */
+
+function updateIncome() {
+
+    const id =
+        document.getElementById("editId").value;
+
+    const updatedIncome = {
+
+        incomeFrom:
+            document.getElementById("editIncomeFrom").value,
+
+        amount:
+            Number(document.getElementById("editAmount").value),
+
+        currency:
+            document.getElementById("editCurrency").value,
+
+        date:
+            document.getElementById("editDate").value,
+
+        description:
+            document.getElementById("editDescription").value.trim()
+
+    };
+
+
+    if (
+        updatedIncome.amount <= 0 ||
+        updatedIncome.date === ""
+    ) {
+
+        alert("Please enter valid amount and date");
+
+        return;
+
+    }
+
+
+    fetch("http://localhost:8080/income/" + id, {
+
+        method: "PUT",
+
+        headers: {
+
+            "Content-Type": "application/json"
+
+        },
+
+        body: JSON.stringify(updatedIncome)
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error("Failed to update income");
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        alert("Income Updated Successfully!");
+
+        document.getElementById("editForm").style.display =
+            "none";
+
+        loadIncome();
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert("Failed to update income");
+
+    });
+
+}
+
+
+/* Delete Income */
+
+function deleteIncome(id) {
+
+    const confirmDelete =
+        confirm("Are you sure you want to delete this income?");
+
+
+    if (!confirmDelete) {
+
+        return;
+
+    }
+
+
+    fetch("http://localhost:8080/income/" + id, {
+
+        method: "DELETE"
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error("Failed to delete income");
+
+        }
+
+        return response.text();
+
+    })
+
+    .then(data => {
+
+        alert("Income Deleted Successfully!");
+
+        loadIncome();
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert("Failed to delete income");
+
+    });
+
+}
+
+
+/* Cancel Edit */
+
+function cancelEdit() {
+
+    document.getElementById("editForm").style.display =
+        "none";
+
+}
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Set Saving Goal</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f2f5f9;
+    color: #333;
+}
+
+header {
+    background: #0d6efd;
+    color: white;
+    text-align: center;
+    padding: 22px;
+    font-size: 27px;
+    font-weight: bold;
+    box-shadow: 0 3px 10px #bbb;
+}
+
+.container {
+    width: 90%;
+    max-width: 500px;
+    margin: 40px auto;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px #d5d5d5;
+}
+
+h2 {
+    text-align: center;
+    color: #0d6efd;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #777;
+    margin-bottom: 25px;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 7px;
+    font-weight: bold;
+}
+
+input,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 7px;
+    font-size: 15px;
+    outline: none;
+}
+
+input:focus,
+textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px #c5dcff;
+}
+
+textarea {
+    resize: vertical;
+}
+
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.save-btn {
+    background: #16a085;
+}
+
+.save-btn:hover {
+    background: #12806c;
+}
+
+.back-btn {
+    background: #555;
+}
+
+.back-btn:hover {
+    background: #333;
+}
+
+#message {
+    text-align: center;
+    margin-top: 18px;
+    font-weight: bold;
+}
+
+.info-box {
+    background: #eaf4ff;
+    border-left: 5px solid #0d6efd;
+    padding: 14px;
+    margin-top: 20px;
+    border-radius: 6px;
+    color: #24527a;
+    font-size: 14px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<header>
+
+Personal Finance Manager
+
+</header>
+
+
+<div class="container">
+
+<div class="card">
+
+<h2>🎯 Set Saving Goal</h2>
+
+<p class="subtitle">
+Create a target and start saving towards it.
+</p>
+
+
+<!-- Goal Name -->
+
+<label for="goalName">
+
+Goal Name
+
+</label>
+
+<input
+    type="text"
+    id="goalName"
+    placeholder="Example: Laptop, Mobile, Bike"
+>
+
+
+<!-- Target Amount -->
+
+<label for="targetAmount">
+
+Target Amount
+
+</label>
+
+<input
+    type="number"
+    id="targetAmount"
+    placeholder="Example: 100000"
+    min="0"
+    step="0.01"
+>
+
+
+<!-- Target Date -->
+
+<label for="targetDate">
+
+Target Date
+
+</label>
+
+<input
+    type="date"
+    id="targetDate"
+>
+
+
+<!-- Description -->
+
+<label for="description">
+
+Description
+
+</label>
+
+<textarea
+    id="description"
+    rows="4"
+    placeholder="Example: I want to buy a laptop">
+</textarea>
+
+
+<!-- Save Goal -->
+
+<button
+    class="save-btn"
+    onclick="saveGoal()">
+
+    🎯 Create Saving Goal
+
+</button>
+
+
+<!-- Back -->
+
+<button
+    class="back-btn"
+    onclick="goDashboard()">
+
+    ← Back To Dashboard
+
+</button>
+
+
+<p id="message"></p>
+
+
+<div class="info-box">
+
+<strong>Example:</strong><br>
+
+Goal: Laptop<br>
+Target Amount: ₹80,000<br>
+Target Date: 31-10-2026
+
+</div>
+
+
+</div>
+
+</div>
+
+
+<script>
+
+
+/* Logged In User */
+
+const userId =
+    localStorage.getItem("userId");
+
+
+/* Check Login */
+
+if (!userId) {
+
+    alert("Please login first");
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+/* Save Goal */
+
+function saveGoal() {
+
+
+    const goalName =
+        document.getElementById(
+            "goalName"
+        ).value.trim();
+
+
+    const targetAmount =
+        document.getElementById(
+            "targetAmount"
+        ).value;
+
+
+    const targetDate =
+        document.getElementById(
+            "targetDate"
+        ).value;
+
+
+    const description =
+        document.getElementById(
+            "description"
+        ).value.trim();
+
+
+    /* Validation */
+
+    if (goalName === "") {
+
+        showMessage(
+            "Please enter goal name.",
+            "red"
+        );
+
+        return;
+
+    }
+
+
+    if (
+        targetAmount === "" ||
+        Number(targetAmount) <= 0
+    ) {
+
+        showMessage(
+            "Please enter a valid target amount.",
+            "red"
+        );
+
+        return;
+
+    }
+
+
+    if (targetDate === "") {
+
+        showMessage(
+            "Please select target date.",
+            "red"
+        );
+
+        return;
+
+    }
+
+
+    /* Goal Object */
+
+    const goal = {
+
+        goalName: goalName,
+
+        targetAmount:
+            Number(targetAmount),
+
+        targetDate: targetDate,
+
+        description: description
+
+    };
+
+
+    /* API Request */
+
+    fetch(
+        "http://localhost:8080/saving-goal/"
+        + userId,
+        {
+
+            method: "POST",
+
+            headers: {
+
+                "Content-Type":
+                    "application/json"
+
+            },
+
+            body:
+                JSON.stringify(goal)
+
+        }
+
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to create goal"
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        showMessage(
+            "Saving Goal Created Successfully! ✅",
+            "green"
+        );
+
+
+        /* Clear Form */
+
+        document.getElementById(
+            "goalName"
+        ).value = "";
+
+
+        document.getElementById(
+            "targetAmount"
+        ).value = "";
+
+
+        document.getElementById(
+            "targetDate"
+        ).value = "";
+
+
+        document.getElementById(
+            "description"
+        ).value = "";
+
+
+        console.log(
+            "Goal Created:",
+            data
+        );
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        showMessage(
+            "Failed to create saving goal. Please try again.",
+            "red"
+        );
+
+    });
+
+}
+
+
+/* Show Message */
+
+function showMessage(
+    text,
+    color
+) {
+
+    const message =
+        document.getElementById(
+            "message"
+        );
+
+    message.innerText = text;
+
+    message.style.color = color;
+
+}
+
+
+/* Back To Dashboard */
+
+function goDashboard() {
+
+    window.location.href =
+        "dashboard.html";
+
+}
+
+</script>
+
+
+</body>
+
+</html>

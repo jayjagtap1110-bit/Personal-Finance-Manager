@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Income - Personal Finance Manager</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+        }
+
+        header {
+            background: #0d6efd;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 400px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 12px #ccc;
+        }
+
+        h2 {
+            text-align: center;
+            color: #0d6efd;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 6px;
+            background: green;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: darkgreen;
+        }
+
+        .back {
+            background: #555;
+        }
+
+        .back:hover {
+            background: #333;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    Personal Finance Manager
+</header>
+
+<div class="container">
+
+    <h2>Add Income</h2>
+
+    <label>Income From</label>
+
+    <select id="incomeFrom">
+        <option value="">Select Income Source</option>
+        <option value="Salary">Salary</option>
+        <option value="Freelance">Freelance</option>
+        <option value="Business">Business</option>
+        <option value="Agriculture">Agriculture</option>
+        <option value="Self-Income">Self-Income</option>
+        <option value="Rental Income">Rental Income</option>
+        <option value="Pension">Pension</option>
+        <option value="Gift">Gift</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label>Amount</label>
+
+    <input
+        type="number"
+        id="amount"
+        placeholder="Enter amount"
+        min="0"
+        step="0.01"
+    >
+
+    <label>Currency</label>
+
+    <select id="currency">
+        <option value="INR">Indian Rupee (₹)</option>
+        <option value="USD">US Dollar ($)</option>
+        <option value="EUR">Euro (€)</option>
+        <option value="GBP">British Pound (£)</option>
+    </select>
+
+    <label>Date</label>
+
+    <input type="date" id="date">
+
+    <label>Description</label>
+
+    <textarea
+        id="description"
+        rows="4"
+        placeholder="Optional description"></textarea>
+
+    <button onclick="saveIncome()">
+        Save Income
+    </button>
+
+    <button class="back" onclick="goDashboard()">
+        Back to Dashboard
+    </button>
+
+    <p id="message"></p>
+
+</div>
+
+<script>
+
+function saveIncome() {
+
+    // Get logged-in user's ID
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+        document.getElementById("message").innerText =
+            "User not logged in. Please login again.";
+
+        document.getElementById("message").style.color = "red";
+
+        return;
+    }
+
+    const incomeFrom =
+        document.getElementById("incomeFrom").value;
+
+    const amount =
+        document.getElementById("amount").value;
+
+    const currency =
+        document.getElementById("currency").value;
+
+    const date =
+        document.getElementById("date").value;
+
+    const description =
+        document.getElementById("description").value.trim();
+
+    if (incomeFrom === "") {
+        alert("Please select Income From");
+        return;
+    }
+
+    if (amount === "" || Number(amount) <= 0) {
+        alert("Please enter a valid amount");
+        return;
+    }
+
+    if (date === "") {
+        alert("Please select a date");
+        return;
+    }
+
+    const income = {
+
+        incomeFrom: incomeFrom,
+
+        amount: Number(amount),
+
+        currency: currency,
+
+        date: date,
+
+        description: description
+    };
+
+    fetch("http://localhost:8080/income/" + userId, {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(income)
+
+    })
+
+    .then(response => {
+
+        if (!response.ok) {
+            throw new Error("Failed to save income");
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        document.getElementById("message").innerText =
+            "Income Added Successfully!";
+
+        document.getElementById("message").style.color = "green";
+
+        document.getElementById("incomeFrom").value = "";
+        document.getElementById("amount").value = "";
+        document.getElementById("currency").value = "INR";
+        document.getElementById("date").value = "";
+        document.getElementById("description").value = "";
+
+        console.log(data);
+
+    })
+
+    .catch(error => {
+
+        document.getElementById("message").innerText =
+            "Failed to add income.";
+
+        document.getElementById("message").style.color = "red";
+
+        console.error(error);
+
+    });
+}
+
+function goDashboard() {
+
+    window.location.href = "dashboard.html";
+
+}
+
+</script>
+
+</body>
+</html>

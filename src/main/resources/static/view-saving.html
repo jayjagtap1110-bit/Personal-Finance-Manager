@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>View Savings</title>
+
+<style>
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    margin: 0;
+}
+
+.container {
+    width: 95%;
+    margin: 40px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px gray;
+}
+
+h2 {
+    text-align: center;
+    color: #16a085;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid gray;
+}
+
+th {
+    background: #16a085;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+}
+
+.action-btn {
+    margin: 3px;
+    padding: 7px 12px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.edit-btn {
+    background: orange;
+}
+
+.delete-btn {
+    background: red;
+}
+
+.back-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: blue;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+#editForm {
+    display: none;
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+
+#editForm input,
+#editForm select,
+#editForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 15px 0;
+    box-sizing: border-box;
+}
+
+.save-btn {
+    background: green;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.cancel-btn {
+    background: #555;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.empty {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Saving History</h2>
+
+<table>
+
+<thead>
+
+<tr>
+<th>No.</th>
+<th>Saving For</th>
+<th>Amount</th>
+<th>Currency</th>
+<th>Date</th>
+<th>Description</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody id="savingTable">
+</tbody>
+
+</table>
+
+
+<!-- Edit Saving Form -->
+
+<div id="editForm">
+
+<h2>Edit Saving</h2>
+
+<input type="hidden" id="editId">
+
+
+<label>Saving For</label>
+
+<input
+    type="text"
+    id="editSavingFor"
+    readonly
+>
+
+
+<label>Amount</label>
+
+<input
+    type="number"
+    id="editAmount"
+    min="0"
+    step="0.01"
+>
+
+
+<label>Currency</label>
+
+<select id="editCurrency">
+
+<option value="INR">Indian Rupee (₹)</option>
+<option value="USD">US Dollar ($)</option>
+<option value="EUR">Euro (€)</option>
+<option value="GBP">British Pound (£)</option>
+
+</select>
+
+
+<label>Date</label>
+
+<input
+    type="date"
+    id="editDate"
+>
+
+
+<label>Description</label>
+
+<textarea
+    id="editDescription"
+    rows="4">
+</textarea>
+
+
+<button
+    class="save-btn"
+    onclick="updateSaving()">
+
+    Save Changes
+
+</button>
+
+<button
+    class="cancel-btn"
+    onclick="cancelEdit()">
+
+    Cancel
+
+</button>
+
+</div>
+
+
+<button
+    class="back-btn"
+    onclick="window.location.href='dashboard.html'">
+
+    Back To Dashboard
+
+</button>
+
+</div>
+
+
+<script>
+
+const userId =
+    localStorage.getItem("userId");
+
+
+/* Check Login */
+
+if (!userId) {
+
+    alert("Please login first");
+
+    window.location.href =
+        "login.html";
+
+} else {
+
+    loadSavings();
+
+}
+
+
+/* Load Savings */
+
+function loadSavings() {
+
+    fetch(
+        "http://localhost:8080/saving/user/"
+        + userId
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load savings"
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        let table = "";
+
+
+        if (
+            !data ||
+            data.length === 0
+        ) {
+
+            table = `
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="empty">
+
+                        No Savings Found
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        } else {
+
+            data.forEach(
+                (saving, index) => {
+
+                    /*
+                     * IMPORTANT:
+                     * Saving is connected to
+                     * SavingGoal through goal.
+                     */
+
+                    const goalName =
+                        saving.goal &&
+                        saving.goal.goalName
+                            ? saving.goal.goalName
+                            : "No Goal";
+
+
+                    table += `
+
+                        <tr>
+
+                            <td>
+                                ${index + 1}
+                            </td>
+
+                            <td>
+                                ${goalName}
+                            </td>
+
+                            <td>
+                                ${saving.amount}
+                            </td>
+
+                            <td>
+                                ${saving.currency}
+                            </td>
+
+                            <td>
+                                ${saving.date}
+                            </td>
+
+                            <td>
+                                ${saving.description || ""}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    class="action-btn edit-btn"
+                                    onclick='editSaving(${JSON.stringify(saving)})'>
+
+                                    Edit
+
+                                </button>
+
+
+                                <button
+                                    class="action-btn delete-btn"
+                                    onclick="deleteSaving(${saving.id})">
+
+                                    Delete
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+            );
+
+        }
+
+
+        document.getElementById(
+            "savingTable"
+        ).innerHTML = table;
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        document.getElementById(
+            "savingTable"
+        ).innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="7"
+                    class="empty">
+
+                    Failed to load savings
+
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+}
+
+
+/* Edit Saving */
+
+function editSaving(saving) {
+
+    document.getElementById(
+        "editForm"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "editId"
+    ).value = saving.id;
+
+
+    /*
+     * Get goal name from
+     * saving.goal.goalName
+     */
+
+    document.getElementById(
+        "editSavingFor"
+    ).value =
+        saving.goal &&
+        saving.goal.goalName
+            ? saving.goal.goalName
+            : "No Goal";
+
+
+    document.getElementById(
+        "editAmount"
+    ).value =
+        saving.amount;
+
+
+    document.getElementById(
+        "editCurrency"
+    ).value =
+        saving.currency;
+
+
+    document.getElementById(
+        "editDate"
+    ).value =
+        saving.date;
+
+
+    document.getElementById(
+        "editDescription"
+    ).value =
+        saving.description || "";
+
+
+    window.scrollTo({
+
+        top:
+            document.getElementById(
+                "editForm"
+            ).offsetTop,
+
+        behavior: "smooth"
+
+    });
+
+}
+
+
+/* Update Saving */
+
+function updateSaving() {
+
+    const id =
+        document.getElementById(
+            "editId"
+        ).value;
+
+
+    const updatedSaving = {
+
+        amount:
+            Number(
+                document.getElementById(
+                    "editAmount"
+                ).value
+            ),
+
+        currency:
+            document.getElementById(
+                "editCurrency"
+            ).value,
+
+        date:
+            document.getElementById(
+                "editDate"
+            ).value,
+
+        description:
+            document.getElementById(
+                "editDescription"
+            ).value.trim()
+
+    };
+
+
+    if (
+        updatedSaving.amount <= 0 ||
+        updatedSaving.date === ""
+    ) {
+
+        alert(
+            "Please enter valid saving details"
+        );
+
+        return;
+
+    }
+
+
+    fetch(
+        "http://localhost:8080/saving/"
+        + id,
+        {
+
+            method: "PUT",
+
+            headers: {
+
+                "Content-Type":
+                    "application/json"
+
+            },
+
+            body:
+                JSON.stringify(
+                    updatedSaving
+                )
+
+        }
+
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to update saving"
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(data => {
+
+        alert(
+            "Saving Updated Successfully!"
+        );
+
+
+        document.getElementById(
+            "editForm"
+        ).style.display = "none";
+
+
+        loadSavings();
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert(
+            "Failed to update saving"
+        );
+
+    });
+
+}
+
+
+/* Delete Saving */
+
+function deleteSaving(id) {
+
+    const confirmDelete =
+        confirm(
+            "Are you sure you want to delete this saving?"
+        );
+
+
+    if (!confirmDelete) {
+
+        return;
+
+    }
+
+
+    fetch(
+        "http://localhost:8080/saving/"
+        + id,
+        {
+
+            method: "DELETE"
+
+        }
+
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to delete saving"
+            );
+
+        }
+
+        return response.text();
+
+    })
+
+    .then(data => {
+
+        alert(
+            "Saving Deleted Successfully!"
+        );
+
+        loadSavings();
+
+    })
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert(
+            "Failed to delete saving"
+        );
+
+    });
+
+}
+
+
+/* Cancel Edit */
+
+function cancelEdit() {
+
+    document.getElementById(
+        "editForm"
+    ).style.display = "none";
+
+}
+
+</script>
+
+</body>
+
+</html>

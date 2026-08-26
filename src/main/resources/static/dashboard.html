@@ -1,0 +1,1962 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Personal Finance Manager</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        header {
+            background: #0d6efd;
+            color: white;
+            padding: 22px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            box-shadow: 0 3px 8px #aaa;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .welcome-card,
+        .summary-card,
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #ddd;
+        }
+
+        .welcome-card {
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .welcome-card h2 {
+            color: #0d6efd;
+            margin-bottom: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            padding: 22px;
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            font-size: 17px;
+            margin-bottom: 12px;
+        }
+
+        .summary-card p {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .income-value {
+            color: green;
+        }
+
+        .expense-value {
+            color: red;
+        }
+
+        .saving-value {
+            color: #16a085;
+        }
+
+        .balance-value {
+            color: #2980b9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            padding: 25px;
+        }
+
+        .card h2 {
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+
+        /* Financial Health */
+
+        .health-score {
+            text-align: center;
+        }
+
+        .score-circle {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: #e8f8f2;
+            border: 10px solid #16a085;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            margin: 15px auto;
+        }
+
+        .score-circle span {
+            font-size: 28px;
+            font-weight: bold;
+            color: #16a085;
+        }
+
+        #healthStatus {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Budget */
+
+        .alert-box {
+            background: #fff3cd;
+            border-left: 6px solid #ffc107;
+            padding: 18px;
+            border-radius: 8px;
+        }
+
+        .alert-box h3 {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .alert-box p {
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        #budgetPercentage {
+            font-weight: bold;
+        }
+
+        /* Charts */
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .pie-chart {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: #e5e5e5;
+        }
+
+        .chart-legend {
+            margin-left: 25px;
+        }
+
+        .legend-item {
+            margin: 12px 0;
+            font-weight: bold;
+        }
+
+        .legend-box {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+
+        .income-box {
+            background: green;
+        }
+
+        .expense-box {
+            background: red;
+        }
+
+        /* ==============================
+           MONTHLY EXPENSE CHART
+           ============================== */
+
+        .monthly-chart-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding-top: 15px;
+        }
+
+        .bar-chart {
+            height: 300px;
+            min-width: 650px;
+
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+
+            padding: 20px 10px 45px;
+
+            border-bottom: 2px solid #aaa;
+            position: relative;
+        }
+
+        .monthly-bar-container {
+            height: 100%;
+            width: 55px;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+
+            position: relative;
+        }
+
+        .monthly-bar {
+            width: 42px;
+            min-height: 2px;
+
+            background: #0d6efd;
+
+            border-radius: 6px 6px 0 0;
+
+            transition:
+                height 0.5s ease,
+                opacity 0.2s ease;
+
+            cursor: pointer;
+
+            position: relative;
+        }
+
+        .monthly-bar:hover {
+            opacity: 0.8;
+        }
+
+        .monthly-bar-value {
+            position: absolute;
+
+            top: -28px;
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            font-size: 11px;
+            font-weight: bold;
+
+            color: #333;
+
+            white-space: nowrap;
+
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .monthly-bar:hover .monthly-bar-value {
+            opacity: 1;
+        }
+
+        .monthly-label {
+            position: absolute;
+
+            bottom: -35px;
+
+            width: 100%;
+
+            text-align: center;
+
+            font-size: 13px;
+            font-weight: bold;
+
+            color: #555;
+        }
+
+        .monthly-expense-total {
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .no-expense-data {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+
+        /* Saving Goals */
+
+        .goal-item {
+            margin-bottom: 25px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .goal-name {
+            color: #333;
+        }
+
+        .goal-amount {
+            color: #555;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: #e5e5e5;
+            height: 18px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            border-radius: 10px;
+            background: #0d6efd;
+            transition: width 0.5s ease;
+        }
+
+        .goal-percentage {
+            margin-top: 7px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .no-goals {
+            color: #777;
+            padding: 10px 0;
+        }
+
+        /* Finance Options */
+
+        .options-card {
+            margin-top: 25px;
+        }
+
+        .options-card h2 {
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+
+        .main-options {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .main-options button {
+            flex: 1;
+        }
+
+        button {
+            padding: 11px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            color: white;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .manage-btn {
+            background: #0d6efd;
+        }
+
+        .goal {
+            background: #34495e;
+        }
+
+        .transaction {
+            background: #f39c12;
+        }
+
+        .logout {
+            background: black;
+        }
+
+        /* Manage Transaction Menu */
+
+        .manage-menu {
+            display: none;
+            margin-top: 16px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fafafa;
+            text-align: center;
+        }
+
+        .manage-menu.active {
+            display: block;
+        }
+
+        .manage-menu h3 {
+            color: #0d6efd;
+            margin-bottom: 15px;
+        }
+
+        .transaction-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .transaction-buttons button {
+            margin: 0;
+        }
+
+        .add-income {
+            background: green;
+        }
+
+        .view-income {
+            background: #d31515;
+        }
+
+        .add-expense {
+            background: red;
+        }
+
+        .view-expense {
+            background: #8e44ad;
+        }
+
+        .add-saving {
+            background: #16a085;
+        }
+
+        .view-saving {
+            background: #2980b9;
+        }
+
+        /* Footer */
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #555;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 900px) {
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-options {
+                flex-wrap: wrap;
+            }
+
+            .main-options button {
+                min-width: 45%;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                font-size: 22px;
+            }
+
+            .chart-container {
+                flex-direction: column;
+            }
+
+            .chart-legend {
+                margin-left: 0;
+                margin-top: 20px;
+            }
+
+            .main-options {
+                flex-direction: column;
+            }
+
+            .main-options button {
+                width: 100%;
+            }
+
+            .transaction-buttons {
+                flex-direction: column;
+            }
+
+            .transaction-buttons button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    Personal Finance Manager Dashboard
+</header>
+
+<div class="container">
+
+    <!-- Welcome -->
+
+    <div class="welcome-card">
+
+        <h2>
+            Welcome to Personal Finance Manager 👋
+        </h2>
+
+        <p>
+            Manage your income, expenses, savings and financial goals
+            from one simple dashboard.
+        </p>
+
+    </div>
+
+
+    <!-- Summary -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+
+            <h3>Total Income</h3>
+
+            <p
+                class="income-value"
+                id="totalIncome">
+                ₹0
+            </p>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <h3>Total Expense</h3>
+
+            <p
+                class="expense-value"
+                id="totalExpense">
+                ₹0
+            </p>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <h3>Total Savings</h3>
+
+            <p
+                class="saving-value"
+                id="totalSavings">
+                ₹0
+            </p>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <h3>Remaining Balance</h3>
+
+            <p
+                class="balance-value"
+                id="remainingBalance">
+                ₹0
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Health + Budget -->
+
+    <div class="dashboard-grid">
+
+        <div class="card health-score">
+
+            <h2>
+                Financial Health Score
+            </h2>
+
+            <div class="score-circle">
+
+                <span id="healthScore">
+                    0
+                </span>
+
+            </div>
+
+            <p>
+
+                Score:
+
+                <strong>
+
+                    <span id="healthScoreText">
+                        0
+                    </span>
+
+                    / 100
+
+                </strong>
+
+            </p>
+
+            <p id="healthStatus">
+                Status: Calculating...
+            </p>
+
+        </div>
+
+
+        <div class="card">
+
+            <h2>
+                Budget Alert
+            </h2>
+
+            <div
+                class="alert-box"
+                id="budgetAlertBox">
+
+                <h3 id="budgetTitle">
+                    Budget Information
+                </h3>
+
+                <p>
+
+                    You have used approximately
+
+                    <span id="budgetPercentage">
+                        0%
+                    </span>
+
+                    of your available income.
+
+                </p>
+
+                <br>
+
+                <p id="budgetMessage">
+                    Calculating your budget status...
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Charts -->
+
+    <div class="dashboard-grid">
+
+        <!-- Income vs Expense -->
+
+        <div class="card">
+
+            <h2>
+                Income vs Expense
+            </h2>
+
+            <div class="chart-container">
+
+                <div
+                    class="pie-chart"
+                    id="incomeExpenseChart">
+                </div>
+
+                <div class="chart-legend">
+
+                    <div class="legend-item">
+
+                        <span
+                            class="legend-box income-box">
+                        </span>
+
+                        Income -
+
+                        <span id="chartIncome">
+                            ₹0
+                        </span>
+
+                    </div>
+
+
+                    <div class="legend-item">
+
+                        <span
+                            class="legend-box expense-box">
+                        </span>
+
+                        Expense -
+
+                        <span id="chartExpense">
+                            ₹0
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Dynamic Monthly Expense -->
+
+        <div class="card">
+
+            <h2>
+                Monthly Expense Overview
+            </h2>
+
+            <div
+                class="monthly-chart-wrapper">
+
+                <div
+                    class="bar-chart"
+                    id="monthlyExpenseChart">
+
+                </div>
+
+            </div>
+
+            <p
+                class="monthly-expense-total"
+                id="monthlyExpenseTotal">
+
+                Total Expense: ₹0
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Saving Goals -->
+
+    <div class="card">
+
+        <h2>
+            Saving Goal Progress
+        </h2>
+
+        <div id="goalProgressContainer">
+
+            <p class="no-goals">
+                Loading saving goals...
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- Finance Options -->
+
+    <div class="card options-card">
+
+        <h2>
+            Finance Options
+        </h2>
+
+
+        <div class="main-options">
+
+            <button
+                type="button"
+                class="manage-btn"
+                onclick="toggleManageTransaction()">
+
+                Manage Transaction
+
+            </button>
+
+
+            <button
+                type="button"
+                class="goal"
+                onclick="openGoalPage()">
+
+                Add Goal
+
+            </button>
+
+
+            <button
+                type="button"
+                class="transaction"
+                onclick="openTransactionsPage()">
+
+                Transactions
+
+            </button>
+
+
+            <button
+                type="button"
+                class="logout"
+                onclick="logout()">
+
+                Logout
+
+            </button>
+
+        </div>
+
+
+        <div
+            class="manage-menu"
+            id="manageTransactionMenu">
+
+            <h3>
+                Manage Transaction
+            </h3>
+
+
+            <div class="transaction-buttons">
+
+                <button
+                    type="button"
+                    class="add-income"
+                    onclick="openIncomePage()">
+
+                    Add Income
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="view-income"
+                    onclick="openViewIncomePage()">
+
+                    View Income
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="add-expense"
+                    onclick="openExpensePage()">
+
+                    Add Expense
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="view-expense"
+                    onclick="openViewExpensePage()">
+
+                    View Expense
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="add-saving"
+                    onclick="openSavingPage()">
+
+                    Add Saving
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="view-saving"
+                    onclick="openViewSavingPage()">
+
+                    View Saving
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<footer>
+
+    © 2026 Personal Finance Manager
+
+</footer>
+
+
+<script>
+
+    /* ==================================================
+       GET LOGGED-IN USER
+       ================================================== */
+
+    const userId =
+        localStorage.getItem("userId");
+
+
+    /* ==================================================
+       CHECK LOGIN
+       ================================================== */
+
+    if (!userId) {
+
+        alert("Please login first");
+
+        window.location.href =
+            "login.html";
+
+    } else {
+
+        loadDashboardSummary();
+
+        loadMonthlyExpenses();
+
+    }
+
+
+    /* ==================================================
+       LOAD DASHBOARD SUMMARY
+       ================================================== */
+
+    function loadDashboardSummary() {
+
+        fetch(
+            "http://localhost:8080/dashboard/summary/"
+            + userId
+        )
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to load dashboard summary. Status: "
+                    + response.status
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            console.log(
+                "Dashboard Summary:",
+                data
+            );
+
+
+            /* SUMMARY */
+
+            document.getElementById(
+                "totalIncome"
+            ).innerText =
+                formatCurrency(
+                    data.totalIncome
+                );
+
+
+            document.getElementById(
+                "totalExpense"
+            ).innerText =
+                formatCurrency(
+                    data.totalExpense
+                );
+
+
+            document.getElementById(
+                "totalSavings"
+            ).innerText =
+                formatCurrency(
+                    data.totalSavings
+                );
+
+
+            document.getElementById(
+                "remainingBalance"
+            ).innerText =
+                formatCurrency(
+                    data.remainingBalance
+                );
+
+
+            /* HEALTH */
+
+            const healthScore =
+                Number(
+                    data.healthScore || 0
+                );
+
+
+            document.getElementById(
+                "healthScore"
+            ).innerText =
+                Math.round(
+                    healthScore
+                );
+
+
+            document.getElementById(
+                "healthScoreText"
+            ).innerText =
+                Math.round(
+                    healthScore
+                );
+
+
+            document.getElementById(
+                "healthStatus"
+            ).innerText =
+                "Status: "
+                +
+                (
+                    data.healthStatus ||
+                    "Needs Improvement"
+                );
+
+
+            updateHealthColor(
+                healthScore
+            );
+
+
+            /* BUDGET */
+
+            const budgetPercentage =
+                Number(
+                    data.budgetPercentage || 0
+                );
+
+
+            document.getElementById(
+                "budgetPercentage"
+            ).innerText =
+                budgetPercentage.toFixed(1)
+                + "%";
+
+
+            document.getElementById(
+                "budgetTitle"
+            ).innerText =
+                data.budgetTitle ||
+                "Budget Information";
+
+
+            document.getElementById(
+                "budgetMessage"
+            ).innerText =
+                data.budgetMessage ||
+                "Add income to start tracking your budget.";
+
+
+            updateBudgetColor(
+                budgetPercentage
+            );
+
+
+            /* PIE CHART */
+
+            document.getElementById(
+                "chartIncome"
+            ).innerText =
+                formatCurrency(
+                    data.totalIncome
+                );
+
+
+            document.getElementById(
+                "chartExpense"
+            ).innerText =
+                formatCurrency(
+                    data.totalExpense
+                );
+
+
+            updateIncomeExpenseChart(
+                data.totalIncome,
+                data.totalExpense
+            );
+
+
+            /* GOALS */
+
+            renderGoalProgress(
+                data.goalProgress
+            );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Dashboard API Error:",
+                error
+            );
+
+        });
+
+    }
+
+
+    /* ==================================================
+       LOAD MONTHLY EXPENSES
+       ================================================== */
+
+    function loadMonthlyExpenses() {
+
+        fetch(
+            "http://localhost:8080/expense/user/"
+            + userId
+        )
+
+        .then(response => {
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Failed to load expenses. Status: "
+                    + response.status
+                );
+
+            }
+
+            return response.json();
+
+        })
+
+        .then(expenses => {
+
+            console.log(
+                "Expenses:",
+                expenses
+            );
+
+            renderMonthlyExpenses(
+                expenses
+            );
+
+        })
+
+        .catch(error => {
+
+            console.error(
+                "Monthly Expense Error:",
+                error
+            );
+
+            document.getElementById(
+                "monthlyExpenseChart"
+            ).innerHTML =
+                `
+                <p class="no-expense-data">
+                    Unable to load monthly expenses.
+                </p>
+                `;
+
+        });
+
+    }
+
+
+    /* ==================================================
+       RENDER MONTHLY EXPENSES
+       ================================================== */
+
+    function renderMonthlyExpenses(
+        expenses
+    ) {
+
+        const chart =
+            document.getElementById(
+                "monthlyExpenseChart"
+            );
+
+
+        chart.innerHTML = "";
+
+
+        const monthlyExpenses =
+            new Array(12).fill(0);
+
+
+        if (
+            Array.isArray(expenses)
+        ) {
+
+            expenses.forEach(
+                expense => {
+
+                    if (
+                        !expense ||
+                        expense.amount == null ||
+                        !expense.date
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const amount =
+                        Number(
+                            expense.amount
+                        );
+
+
+                    if (
+                        isNaN(amount)
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const date =
+                        new Date(
+                            expense.date
+                        );
+
+
+                    if (
+                        isNaN(
+                            date.getTime()
+                        )
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const month =
+                        date.getMonth();
+
+
+                    monthlyExpenses[
+                        month
+                    ] += amount;
+
+                }
+            );
+
+        }
+
+
+        const maxExpense =
+            Math.max(
+                ...monthlyExpenses
+            );
+
+
+        const totalExpense =
+            monthlyExpenses.reduce(
+                (
+                    total,
+                    amount
+                ) =>
+                    total + amount,
+                0
+            );
+
+
+        document.getElementById(
+            "monthlyExpenseTotal"
+        ).innerText =
+            "Total Expense: "
+            +
+            formatCurrency(
+                totalExpense
+            );
+
+
+        const monthNames = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ];
+
+
+        monthNames.forEach(
+            (
+                monthName,
+                index
+            ) => {
+
+                const amount =
+                    monthlyExpenses[
+                        index
+                    ];
+
+
+                const container =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                container.className =
+                    "monthly-bar-container";
+
+
+                const bar =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                bar.className =
+                    "monthly-bar";
+
+
+                let height = 2;
+
+
+                if (
+                    maxExpense > 0 &&
+                    amount > 0
+                ) {
+
+                    height =
+                        Math.max(
+                            5,
+                            (
+                                amount /
+                                maxExpense
+                            ) * 210
+                        );
+
+                }
+
+
+                bar.style.height =
+                    height + "px";
+
+
+                const value =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                value.className =
+                    "monthly-bar-value";
+
+
+                value.innerText =
+                    formatCurrency(
+                        amount
+                    );
+
+
+                const label =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                label.className =
+                    "monthly-label";
+
+
+                label.innerText =
+                    monthName;
+
+
+                bar.appendChild(
+                    value
+                );
+
+
+                container.appendChild(
+                    bar
+                );
+
+
+                container.appendChild(
+                    label
+                );
+
+
+                chart.appendChild(
+                    container
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ==================================================
+       HEALTH COLOR
+       ================================================== */
+
+    function updateHealthColor(
+        score
+    ) {
+
+        const status =
+            document.getElementById(
+                "healthStatus"
+            );
+
+
+        if (score >= 80) {
+
+            status.style.color =
+                "green";
+
+        }
+
+        else if (score >= 60) {
+
+            status.style.color =
+                "#16a085";
+
+        }
+
+        else if (score >= 40) {
+
+            status.style.color =
+                "#f39c12";
+
+        }
+
+        else {
+
+            status.style.color =
+                "red";
+
+        }
+
+    }
+
+
+    /* ==================================================
+       BUDGET COLOR
+       ================================================== */
+
+    function updateBudgetColor(
+        percentage
+    ) {
+
+        const alertBox =
+            document.getElementById(
+                "budgetAlertBox"
+            );
+
+
+        if (percentage < 50) {
+
+            alertBox.style.background =
+                "#d4edda";
+
+            alertBox.style.borderLeftColor =
+                "#28a745";
+
+        }
+
+        else if (percentage < 75) {
+
+            alertBox.style.background =
+                "#e7f3ff";
+
+            alertBox.style.borderLeftColor =
+                "#0d6efd";
+
+        }
+
+        else if (percentage <= 100) {
+
+            alertBox.style.background =
+                "#fff3cd";
+
+            alertBox.style.borderLeftColor =
+                "#ffc107";
+
+        }
+
+        else {
+
+            alertBox.style.background =
+                "#f8d7da";
+
+            alertBox.style.borderLeftColor =
+                "#dc3545";
+
+        }
+
+    }
+
+
+    /* ==================================================
+       MANAGE TRANSACTION
+       ================================================== */
+
+    function toggleManageTransaction() {
+
+        const menu =
+            document.getElementById(
+                "manageTransactionMenu"
+            );
+
+
+        menu.classList.toggle(
+            "active"
+        );
+
+    }
+
+
+    /* ==================================================
+       GOAL PROGRESS
+       ================================================== */
+
+    function renderGoalProgress(
+        goals
+    ) {
+
+        const container =
+            document.getElementById(
+                "goalProgressContainer"
+            );
+
+
+        container.innerHTML = "";
+
+
+        if (
+            !goals ||
+            goals.length === 0
+        ) {
+
+            container.innerHTML =
+                `
+                <p class="no-goals">
+                    No saving goals found.
+                </p>
+                `;
+
+            return;
+
+        }
+
+
+        goals.forEach(
+            goal => {
+
+                const goalName =
+                    goal.goalName ||
+                    "Unnamed Goal";
+
+
+                const targetAmount =
+                    Number(
+                        goal.targetAmount || 0
+                    );
+
+
+                const savedAmount =
+                    Number(
+                        goal.savedAmount || 0
+                    );
+
+
+                let percentage =
+                    Number(
+                        goal.percentage || 0
+                    );
+
+
+                if (percentage < 0) {
+
+                    percentage = 0;
+
+                }
+
+
+                if (percentage > 100) {
+
+                    percentage = 100;
+
+                }
+
+
+                const goalItem =
+                    document.createElement(
+                        "div"
+                    );
+
+
+                goalItem.className =
+                    "goal-item";
+
+
+                goalItem.innerHTML =
+                    `
+                    <div class="goal-header">
+
+                        <span class="goal-name">
+
+                            🎯
+                            ${escapeHtml(goalName)}
+
+                        </span>
+
+                        <span class="goal-amount">
+
+                            ${formatCurrency(savedAmount)}
+                            /
+                            ${formatCurrency(targetAmount)}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="progress-container">
+
+                        <div
+                            class="progress"
+                            style="width: ${percentage}%;">
+                        </div>
+
+                    </div>
+
+
+                    <p class="goal-percentage">
+
+                        ${percentage.toFixed(1)}%
+                        Completed
+
+                    </p>
+                    `;
+
+
+                container.appendChild(
+                    goalItem
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ==================================================
+       PIE CHART
+       ================================================== */
+
+    function updateIncomeExpenseChart(
+        income,
+        expense
+    ) {
+
+        income =
+            Number(
+                income || 0
+            );
+
+
+        expense =
+            Number(
+                expense || 0
+            );
+
+
+        const total =
+            income + expense;
+
+
+        const chart =
+            document.getElementById(
+                "incomeExpenseChart"
+            );
+
+
+        if (total <= 0) {
+
+            chart.style.background =
+                "#e5e5e5";
+
+            return;
+
+        }
+
+
+        const incomeDegree =
+            (
+                income /
+                total
+            ) * 360;
+
+
+        chart.style.background =
+            `
+            conic-gradient(
+                green 0deg ${incomeDegree}deg,
+                red ${incomeDegree}deg 360deg
+            )
+            `;
+
+    }
+
+
+    /* ==================================================
+       FORMAT CURRENCY
+       ================================================== */
+
+    function formatCurrency(
+        amount
+    ) {
+
+        return "₹"
+            +
+            Number(
+                amount || 0
+            ).toLocaleString(
+                "en-IN",
+                {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                }
+            );
+
+    }
+
+
+    /* ==================================================
+       ESCAPE HTML
+       ================================================== */
+
+    function escapeHtml(
+        value
+    ) {
+
+        return String(value)
+
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+
+            .replace(
+                /</g,
+                "&lt;"
+            )
+
+            .replace(
+                />/g,
+                "&gt;"
+            )
+
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+
+    }
+
+
+    /* ==================================================
+       AUTO REFRESH
+       ================================================== */
+
+    setInterval(
+        function () {
+
+            if (userId) {
+
+                loadDashboardSummary();
+
+                loadMonthlyExpenses();
+
+            }
+
+        },
+        5000
+    );
+
+
+    /* ==================================================
+       NAVIGATION
+       ================================================== */
+
+    function openIncomePage() {
+
+        window.location.href =
+            "add-income.html";
+
+    }
+
+
+    function openViewIncomePage() {
+
+        window.location.href =
+            "view-income.html";
+
+    }
+
+
+    function openExpensePage() {
+
+        window.location.href =
+            "add-expense.html";
+
+    }
+
+
+    function openViewExpensePage() {
+
+        window.location.href =
+            "view-expense.html";
+
+    }
+
+
+    function openGoalPage() {
+
+        window.location.href =
+            "add-goal.html";
+
+    }
+
+
+    function openSavingPage() {
+
+        window.location.href =
+            "add-saving.html";
+
+    }
+
+
+    function openViewSavingPage() {
+
+        window.location.href =
+            "view-saving.html";
+
+    }
+
+
+    function openTransactionsPage() {
+
+        window.location.href =
+            "transactions.html";
+
+    }
+
+
+    /* ==================================================
+       LOGOUT
+       ================================================== */
+
+    function logout() {
+
+        localStorage.removeItem(
+            "userId"
+        );
+
+        localStorage.removeItem(
+            "userEmail"
+        );
+
+        localStorage.removeItem(
+            "userName"
+        );
+
+
+        alert(
+            "Logout Successful"
+        );
+
+
+        window.location.href =
+            "login.html";
+
+    }
+
+</script>
+
+</body>
+
+</html>
+```

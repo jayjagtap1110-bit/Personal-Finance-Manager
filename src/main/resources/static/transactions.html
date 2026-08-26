@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Transaction History - Personal Finance Manager</title>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #f4f6f9;
+    color: #333;
+}
+
+header {
+    background: #0d6efd;
+    color: white;
+    padding: 22px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    box-shadow: 0 3px 8px #aaa;
+}
+
+.container {
+    width: 94%;
+    max-width: 1400px;
+    margin: 30px auto;
+}
+
+.back-button {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 10px 18px;
+    background: #34495e;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.back-button:hover {
+    opacity: 0.85;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px #ddd;
+}
+
+.card h2 {
+    margin-bottom: 20px;
+}
+
+.income-title {
+    color: green;
+}
+
+.expense-title {
+    color: red;
+}
+
+.saving-title {
+    color: #16a085;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 750px;
+}
+
+th {
+    background: #0d6efd;
+    color: white;
+    padding: 13px;
+    text-align: left;
+}
+
+td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background: #f5f5f5;
+}
+
+.amount {
+    font-weight: bold;
+}
+
+.income-amount {
+    color: green;
+}
+
+.expense-amount {
+    color: red;
+}
+
+.saving-amount {
+    color: #16a085;
+}
+
+.no-data {
+    color: #777;
+    padding: 15px 0;
+}
+
+.loading {
+    color: #777;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px;
+    color: #555;
+}
+
+@media (max-width: 700px) {
+
+    header {
+        font-size: 21px;
+    }
+
+    .container {
+        width: 96%;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+    Personal Finance Manager - Transaction History
+</header>
+
+
+<div class="container">
+
+
+    <a
+        href="dashboard.html"
+        class="back-button">
+
+        ← Back to Dashboard
+
+    </a>
+
+
+    <!-- ==============================
+         INCOME
+         ============================== -->
+
+    <div class="card">
+
+        <h2 class="income-title">
+            💰 Income Transactions
+        </h2>
+
+        <div
+            id="incomeLoading"
+            class="loading">
+
+            Loading income transactions...
+
+        </div>
+
+        <div
+            id="incomeError"
+            class="error">
+        </div>
+
+        <div class="table-container">
+
+            <table id="incomeTable">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Income From</th>
+
+                        <th>Amount</th>
+
+                        <th>Currency</th>
+
+                        <th>Date</th>
+
+                        <th>Description</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="incomeTableBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==============================
+         EXPENSE
+         ============================== -->
+
+    <div class="card">
+
+        <h2 class="expense-title">
+            💸 Expense Transactions
+        </h2>
+
+        <div
+            id="expenseLoading"
+            class="loading">
+
+            Loading expense transactions...
+
+        </div>
+
+        <div
+            id="expenseError"
+            class="error">
+        </div>
+
+        <div class="table-container">
+
+            <table id="expenseTable">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Expense From</th>
+
+                        <th>Category</th>
+
+                        <th>Amount</th>
+
+                        <th>Currency</th>
+
+                        <th>Date</th>
+
+                        <th>Description</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="expenseTableBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==============================
+         SAVINGS
+         ============================== -->
+
+    <div class="card">
+
+        <h2 class="saving-title">
+            🏦 Saving Transactions
+        </h2>
+
+        <div
+            id="savingLoading"
+            class="loading">
+
+            Loading saving transactions...
+
+        </div>
+
+        <div
+            id="savingError"
+            class="error">
+        </div>
+
+        <div class="table-container">
+
+            <table id="savingTable">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+
+                        <th>Amount</th>
+
+                        <th>Currency</th>
+
+                        <th>Date</th>
+
+                        <th>Description</th>
+
+                        <th>Goal</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="savingTableBody">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<footer>
+
+    © 2026 Personal Finance Manager
+
+</footer>
+
+
+<script>
+
+
+/* ==================================================
+   GET LOGGED-IN USER
+   ================================================== */
+
+const userId =
+    localStorage.getItem("userId");
+
+
+/* ==================================================
+   CHECK LOGIN
+   ================================================== */
+
+if (!userId) {
+
+    alert("Please login first");
+
+    window.location.href =
+        "login.html";
+
+}
+
+
+/* ==================================================
+   LOAD ALL TRANSACTIONS
+   ================================================== */
+
+if (userId) {
+
+    loadIncomeTransactions();
+
+    loadExpenseTransactions();
+
+    loadSavingTransactions();
+
+}
+
+
+/* ==================================================
+   LOAD INCOME
+   ================================================== */
+
+function loadIncomeTransactions() {
+
+    fetch(
+        "http://localhost:8080/income/user/"
+        + userId
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load income transactions"
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(incomes => {
+
+        const loading =
+            document.getElementById(
+                "incomeLoading"
+            );
+
+        const tbody =
+            document.getElementById(
+                "incomeTableBody"
+            );
+
+        loading.style.display =
+            "none";
+
+        tbody.innerHTML = "";
+
+
+        if (
+            !incomes ||
+            incomes.length === 0
+        ) {
+
+            tbody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="no-data">
+
+                        No income transactions found.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        /*
+         * IMPORTANT
+         *
+         * We DO NOT display:
+         *
+         * income.id
+         *
+         * Instead we display:
+         *
+         * index + 1
+         *
+         * So the UI shows:
+         *
+         * 1
+         * 2
+         * 3
+         * 4
+         * ...
+         */
+
+        incomes.forEach(
+            (income, index) => {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${index + 1}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            income.incomeFrom || "-"
+                        )}
+                    </td>
+
+                    <td
+                        class="amount income-amount">
+
+                        ${formatCurrency(
+                            income.amount,
+                            income.currency
+                        )}
+
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            income.currency || "INR"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            income.date || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            income.description || "-"
+                        )}
+                    </td>
+
+                `;
+
+
+                tbody.appendChild(
+                    row
+                );
+
+            }
+        );
+
+    })
+
+    .catch(error => {
+
+        console.error(
+            "Income Error:",
+            error
+        );
+
+
+        document.getElementById(
+            "incomeLoading"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "incomeError"
+        ).innerText =
+            "Unable to load income transactions.";
+
+    });
+
+}
+
+
+/* ==================================================
+   LOAD EXPENSE
+   ================================================== */
+
+function loadExpenseTransactions() {
+
+    fetch(
+        "http://localhost:8080/expense/user/"
+        + userId
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load expense transactions"
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(expenses => {
+
+        const loading =
+            document.getElementById(
+                "expenseLoading"
+            );
+
+        const tbody =
+            document.getElementById(
+                "expenseTableBody"
+            );
+
+        loading.style.display =
+            "none";
+
+        tbody.innerHTML = "";
+
+
+        if (
+            !expenses ||
+            expenses.length === 0
+        ) {
+
+            tbody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="7"
+                        class="no-data">
+
+                        No expense transactions found.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        /*
+         * Again:
+         *
+         * Do NOT show expense.id
+         *
+         * Show index + 1
+         */
+
+        expenses.forEach(
+            (expense, index) => {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${index + 1}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            expense.expenseFrom || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            expense.category || "-"
+                        )}
+                    </td>
+
+                    <td
+                        class="amount expense-amount">
+
+                        ${formatCurrency(
+                            expense.amount,
+                            expense.currency
+                        )}
+
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            expense.currency || "INR"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            expense.date || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            expense.description || "-"
+                        )}
+                    </td>
+
+                `;
+
+
+                tbody.appendChild(
+                    row
+                );
+
+            }
+        );
+
+    })
+
+    .catch(error => {
+
+        console.error(
+            "Expense Error:",
+            error
+        );
+
+
+        document.getElementById(
+            "expenseLoading"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "expenseError"
+        ).innerText =
+            "Unable to load expense transactions.";
+
+    });
+
+}
+
+
+/* ==================================================
+   LOAD SAVINGS
+   ================================================== */
+
+function loadSavingTransactions() {
+
+    fetch(
+        "http://localhost:8080/saving/user/"
+        + userId
+    )
+
+    .then(response => {
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Failed to load saving transactions"
+            );
+
+        }
+
+        return response.json();
+
+    })
+
+    .then(savings => {
+
+        const loading =
+            document.getElementById(
+                "savingLoading"
+            );
+
+        const tbody =
+            document.getElementById(
+                "savingTableBody"
+            );
+
+        loading.style.display =
+            "none";
+
+        tbody.innerHTML = "";
+
+
+        if (
+            !savings ||
+            savings.length === 0
+        ) {
+
+            tbody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="no-data">
+
+                        No saving transactions found.
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+
+        }
+
+
+        /*
+         * Do NOT display:
+         *
+         * saving.id
+         *
+         * Display:
+         *
+         * index + 1
+         */
+
+        savings.forEach(
+            (saving, index) => {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                const goalName =
+                    saving.goal &&
+                    saving.goal.goalName
+                        ? saving.goal.goalName
+                        : "-";
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${index + 1}
+                    </td>
+
+                    <td
+                        class="amount saving-amount">
+
+                        ${formatCurrency(
+                            saving.amount,
+                            saving.currency
+                        )}
+
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            saving.currency || "INR"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            saving.date || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            saving.description || "-"
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                            goalName
+                        )}
+                    </td>
+
+                `;
+
+
+                tbody.appendChild(
+                    row
+                );
+
+            }
+        );
+
+    })
+
+    .catch(error => {
+
+        console.error(
+            "Saving Error:",
+            error
+        );
+
+
+        document.getElementById(
+            "savingLoading"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "savingError"
+        ).innerText =
+            "Unable to load saving transactions.";
+
+    });
+
+}
+
+
+/* ==================================================
+   FORMAT CURRENCY
+   ================================================== */
+
+function formatCurrency(
+    amount,
+    currency
+) {
+
+    const value =
+        Number(amount || 0);
+
+
+    const currencyCode =
+        currency || "INR";
+
+
+    return currencyCode +
+        " " +
+        value.toLocaleString(
+            "en-IN",
+            {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }
+        );
+
+}
+
+
+/* ==================================================
+   ESCAPE HTML
+   ================================================== */
+
+function escapeHtml(value) {
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+</script>
+
+
+</body>
+
+</html>
+```
